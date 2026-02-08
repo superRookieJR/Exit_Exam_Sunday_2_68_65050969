@@ -1,0 +1,29 @@
+services:
+  dcomplaint_system_dbb:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: complaint_system
+    ports:
+      - "5435:5432"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/1-init.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/2-seed.sql
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    environment:
+      DATABASE_URL: postgresql://user:password@complaint_system_db:5435/complaint_system
+      NODE_ENV: production
+    ports:
+      - "3000:3000"
+    depends_on:
+      - complaint_system_db
+
+volumes:
+  postgres_data:
